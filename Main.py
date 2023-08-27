@@ -6,7 +6,10 @@ from os import listdir
 from os.path import isfile, join
 import Characters
 from customFunctions import load_sprite_sheets, Background
-import Objects as obj
+from Objects import Object
+
+# to do:
+# - add animation mechanic to character class
 
 pg.init()
 pg.display.set_caption("Game")
@@ -20,14 +23,12 @@ window = pg.display.set_mode(WIN_SIZE, pg.RESIZABLE)
 surface = pg.Surface((1920, 1080))
 
 def draw(surface, window, objects, background):
-    tiles, image = background.get_background()
-    for tile in tiles:
-        surface.blit(image, tile)
+    win_center = (window.get_width()//2, window.get_height()//2)
+    surface_center = (surface.get_width()//2, surface.get_height()//2)
+    surface.blit(background.surface, (-win_center[0]+surface_center[0], -win_center[1]+surface_center[1]))
 
     for object in objects:
         object.draw(surface)
-    win_center = (window.get_width()//2, window.get_height()//2)
-    surface_center = (surface.get_width()//2, surface.get_height()//2)
 
     window.blit(surface,(win_center[0]-surface_center[0], win_center[1]-surface_center[1]))
     pg.display.update()
@@ -42,9 +43,14 @@ def main(window):
     run = True
 
     objects = []
-    player = Characters.Player("MainCharacters", "Knight_1", 1000, 500, 10, 10)
+    background = Background("Tileset", "Night", 32, 32, 0)
+    objects.append(Object("Tileset", "Night", 32, 32,1000, 800))
+    objects.append(Object("Tileset", "Night", 32, 32,1064, 800))
+    objects.append(Object("Tileset", "Night", 32, 32,1128, 800))
+    objects.append(Object("Tileset", "Night", 32, 32,968, 800))
+
+    player = Characters.Player("MainCharacters", "Knight_1", 1000, 0, 10, 10)
     objects.append(player)
-    background = Background("Tileset", "Night", 32, 32, 2)
 
     while run:
         delta_time = clock.tick(FPS)
@@ -56,6 +62,10 @@ def main(window):
                 if event.key == pg.K_ESCAPE:
                     run = False
                     break
+                if event.key == pg.K_SPACE:
+                    player.jump()
+            if event.type == pg.VIDEORESIZE:
+                background.update()
 
         update(objects, delta_time)
         draw(surface, window, objects, background)
