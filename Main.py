@@ -48,11 +48,14 @@ def main(window):
 
     objects = []
     background = Background("Tileset", "Night", 32, 32, 0)
+    a_pressed = False
+    d_pressed = False
 
     # spawns ------------------------------------------------------
     for i in range(surface.get_width()//16):
         objects.append(Object("Tileset", "Night", 32,32,i*64,
                               surface.get_height()-64))
+    objects.append(Characters.Knight(1200, 500))
 
     player = Characters.Player(1000, 0)
     objects.append(player)
@@ -70,21 +73,28 @@ def main(window):
                     break
                 if event.key == pg.K_SPACE:
                     player.attack()
-                if event.key == pg.K_w:
-                    player.jump()
+                # if event.key == pg.K_w:
+                #     player.jump()
                 if event.key == pg.K_a:
-                    player.moveleft()
+                    a_pressed = True
                 if event.key == pg.K_d:
-                    player.moveright()
+                    d_pressed = True
                 if event.key == pg.K_F11:
                     pg.display.toggle_fullscreen()
             if event.type == pg.KEYUP:
                 if event.key == pg.K_a:
-                    player.stop()
+                    a_pressed = False
                 if event.key == pg.K_d:
-                    player.stop()
+                    d_pressed = False
             if event.type == pg.VIDEORESIZE:
                 background.update()
+
+        if a_pressed:
+            player.moveleft()
+        elif d_pressed:
+            player.moveright()
+        else:
+            player.stop()
 
         update(objects, delta_time)
         draw(surface, window, objects, background, player)
