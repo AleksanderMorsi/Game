@@ -1,3 +1,4 @@
+import Objects
 import pygame as pg
 import os
 import random
@@ -22,13 +23,16 @@ FPS = 60
 window = pg.display.set_mode(WIN_SIZE, pg.RESIZABLE)
 surface = pg.Surface((1920, 1080))
 
-def draw(surface, window, objects, background):
-    win_center = (window.get_width()//2, window.get_height()//2)
+def draw(surface, window, objects, background, player):
+    win_center = (pg.display.get_surface().get_width()//2, pg.display.get_surface().get_height()//2)
     surface_center = (surface.get_width()//2, surface.get_height()//2)
-    surface.blit(background.surface, (-win_center[0]+surface_center[0], -win_center[1]+surface_center[1]))
+    offset = [win_center[0]-player.pos[0]-(player.size[0]//2),
+              win_center[1] - player.pos[1]]
+    surface.blit(background.surface, (
+        -win_center[0]+surface_center[0], -win_center[1]+surface_center[1]))
 
     for object in objects:
-        object.draw(surface)
+        object.draw(surface, offset)
 
     window.blit(surface,(win_center[0]-surface_center[0], win_center[1]-surface_center[1]))
     pg.display.update()
@@ -44,13 +48,15 @@ def main(window):
 
     objects = []
     background = Background("Tileset", "Night", 32, 32, 0)
-    objects.append(Object("Tileset", "Night", 32, 32,1000, 800))
-    objects.append(Object("Tileset", "Night", 32, 32,1064, 800))
-    objects.append(Object("Tileset", "Night", 32, 32,1128, 800))
-    objects.append(Object("Tileset", "Night", 32, 32,968, 800))
 
-    player = Characters.Player("MainCharacters", "Knight_1", 1000, 0, 10, 10)
+    # spawns ------------------------------------------------------
+    for i in range(surface.get_width()//16):
+        objects.append(Object("Tileset", "Night", 32,32,i*64,
+                              surface.get_height()-64))
+
+    player = Characters.Player(1000, 0)
     objects.append(player)
+    # --------------------------------------------------------------
 
     while run:
         delta_time = clock.tick(FPS)
@@ -63,12 +69,25 @@ def main(window):
                     run = False
                     break
                 if event.key == pg.K_SPACE:
+                    player.attack()
+                if event.key == pg.K_w:
                     player.jump()
+                if event.key == pg.K_a:
+                    player.moveleft()
+                if event.key == pg.K_d:
+                    player.moveright()
+                if event.key == pg.K_F11:
+                    pg.display.toggle_fullscreen()
+            if event.type == pg.KEYUP:
+                if event.key == pg.K_a:
+                    player.stop()
+                if event.key == pg.K_d:
+                    player.stop()
             if event.type == pg.VIDEORESIZE:
                 background.update()
 
         update(objects, delta_time)
-        draw(surface, window, objects, background)
+        draw(surface, window, objects, background, player)
 
 
     pg.quit()
