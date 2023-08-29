@@ -12,11 +12,14 @@ class Characters(pg.sprite.Sprite):
         self.sprite = self.sprites["Idle_right"][0]
         self.pos = list((x, y))
         self.vel = list((0, 0))
-        self.hp_bar_width = 100
-        self.hp_bar_height = 30
+        self.hp_bar_width = 80
+        self.hp_bar_height = 10
         self.hp = hp
+        self.hp_max = hp
         self.hp_bar = pg.Rect(x+self.size[0]//2 - self.hp_bar_width//2,
                                   y, self.hp_bar_width, self.hp_bar_height)
+        self.hp_green = (30, 222, 30)
+        self.hp_red = (222, 30, 30)
         self.range = range
         self.rect = pg.Rect(x,y,sprite_w *scale , sprite_h * scale) # collision rect (collision with mask)
         self.jump_p = jump_p
@@ -66,6 +69,11 @@ class Characters(pg.sprite.Sprite):
                 if self.anim_count+1 == (len(self.sprites["Hurt_"+self.direction]))*self.animation_time:
                     self.hit = False
 
+            pg.draw.rect(surface, self.hp_red, pg.Rect(self.hp_bar.x + offset[0], self.hp_bar.y + offset[1],
+                                                       self.hp_bar.width, self.hp_bar.height))
+            pg.draw.rect(surface, self.hp_green, pg.Rect(self.hp_bar.x + offset[0], self.hp_bar.y + offset[1],
+                                                       self.hp_bar.width*(self.hp/self.hp_max),
+                                                         self.hp_bar.height))
             surface.blit(self.sprite, (self.pos[0] + offset[0], self.pos[1]+offset[1]))
             self.anim_count += 1
         else:
@@ -99,6 +107,8 @@ class Characters(pg.sprite.Sprite):
             self.collision_y = False
             self.collision_x = False
             self.rect.x, self.rect.y = self.pos
+            self.hp_bar.x = self.pos[0] +self.size[0]//2 - self.hp_bar_width//2
+            self.hp_bar.y = self.pos[1]
         else:
             pass
 
@@ -174,7 +184,7 @@ class Characters(pg.sprite.Sprite):
 class Player(Characters):
     def __init__(self, x, y):
         super().__init__("MainCharacters", "Knight_1",86, 86, x, y,
-                         10,10, 10, 10, 100, 10)
+                         10,10, 10, 10, 30, 10)
         self.type = "Player"
         self.melee = True
 
