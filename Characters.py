@@ -5,7 +5,7 @@ from customFunctions import load_sprite_sheets
 class Characters(pg.sprite.Sprite):
     GRAVITY = 50
     def __init__(self, sprite_dir1, sprite_dir2,sprite_w, sprite_h, x, y,speed, jump_p,
-                 strength,dmg,hp, range,  scale = 2, death_offset = 0):
+                 strength,dmg,hp, range, scale = 2, death_offset = 0):
         super().__init__()
         self.size = (sprite_w*scale, sprite_h*scale)
         self.sprites = load_sprite_sheets(sprite_dir1, sprite_dir2, sprite_w, sprite_h, scale=scale)
@@ -27,7 +27,8 @@ class Characters(pg.sprite.Sprite):
         self.str = strength /20
         self.dmg = dmg
         self.anim_count = 0 # animation frame counter
-        self.animation_time = 7 # frames before next animation frame
+        self.fps = 10
+        self.animation_time = int(0.11 * self.fps) # frames before next animation frame
         self.fall_count = 0
         self.deathoffset = death_offset # adjusts death animation to fit
         self.dead = False
@@ -86,10 +87,10 @@ class Characters(pg.sprite.Sprite):
 
     def update(self, objects, delta_time):
         if not self.dead:
-            self.loop()
+            self.loop(delta_time)
 
             self.attack_cooldown = max(0, self.attack_cooldown-1)
-            self.gravity_acc = min(1,(self.fall_count/1000 /delta_time) * self.GRAVITY)
+            self.gravity_acc = min(1,(self.fall_count/10000000) * self.GRAVITY  *delta_time*delta_time)
             self.vel[1] += self.gravity_acc
             self.fall_count += 1
 
@@ -128,17 +129,21 @@ class Characters(pg.sprite.Sprite):
                 self.direction = "right"
                 self.vel[0] -= str
             self.hit = True
-            self.vel[1] -= 0.2
+            self.is_attacking = False
+            self.vel[1] -= 0.2 * str
             self.hp -= dmg
             self.anim_count = 0
             if self.hp <=0:
                 self.dead = True
                 self.anim_count = 0
 
+    def env_update(self, fps):
+        self.animation_time = int(0.11 * fps)
+
     def collide(self, objects, delta_time):
         self.mask = self.mask = pg.mask.from_surface(self.sprite)
         for object in objects:
-            if object != self:
+            if object != self and abs(object.pos[0] - self.pos[0]) < 200:
                 if (object.type != self.type and self.is_attacking and self.melee and
                         pg.sprite.collide_mask(self, object) and self.attack_frame):
                     object.get_attacked(self.dmg, self.str, self)
@@ -172,11 +177,9 @@ class Characters(pg.sprite.Sprite):
             self.vel[0] = -self.speed
         self.direction = "left"
 
-    def stop(self):
-        if self.vel[0] > 0.1:
-            self.vel[0] -= self.vel[0]/6
-        elif self.vel[0] < -0.1:
-            self.vel[0] -= self.vel[0]/6
+    def stop(self, delta_time):
+        if self.vel[0] > 0.1 or self.vel[0] < -0.1:
+            self.vel[0] -= self.vel[0]/100 * delta_time
         else:
             self.vel[0] = 0
 
@@ -188,7 +191,7 @@ class Player(Characters):
         self.type = "Player"
         self.melee = True
 
-    def loop(self):
+    def loop(self, delta_time):
         pass
         
 class Knight(Characters):
@@ -198,7 +201,6 @@ class Knight(Characters):
         self.type = "Enemy"
         self.melee = True
 
-    def loop(self):
-        self.attack()
-        self.stop()
+    def loop(self, delta_time):
+        self.stop(delta_time)
 

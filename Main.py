@@ -51,17 +51,20 @@ def main(window):
     paused  = False
 
     # spawns ------------------------------------------------------
-    for i in range(surface.get_width()//16):
-        objects.append(Object("Tileset", "Night", 32,32,i*64,
-                              surface.get_height()-64))
-    objects.append(Characters.Knight(1200, 500))
+    for i in range(surface.get_width()*5//64):
+        objects.append(Objects.Grass_green(-surface.get_width()*2+i*64, surface.get_height()-64))
 
-    player = Characters.Player(1000, 0)
+    objects.append(Characters.Knight(1200, surface.get_height()-64 - 86))
+
+    player = Characters.Player(1000, surface.get_height()-64 - 86)
     objects.append(player)
+    for object in objects:
+        object.env_update(FPS)
     # --------------------------------------------------------------
 
     while run:
         delta_time = clock.tick(FPS)
+        fps = 1000/delta_time
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
@@ -100,7 +103,7 @@ def main(window):
             elif d_pressed:
                 player.moveright()
             else:
-                player.stop()
+                player.stop(delta_time)
 
             update(objects, delta_time)
             draw(surface, window, objects, background, player)

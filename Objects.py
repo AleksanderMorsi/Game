@@ -6,7 +6,7 @@ class Object(pg.sprite.Sprite):
         super().__init__()
         self.size = (sprite_w,sprite_h)
         self.sprites = load_sprite_sheets(sprite_dir1, sprite_dir2, sprite_w,sprite_h, direction=False, scale=scale)
-        self.sprite = self.sprites["Tileset"][number]
+        self.sprite = self.sprites[sprite_dir1][number]
         self.pos = list((x, y))
         self.rect = pg.Rect(x,y, sprite_w,sprite_h)
         self.mask = pg.mask.from_surface(self.sprite)
@@ -21,3 +21,10 @@ class Object(pg.sprite.Sprite):
 
     def update(self, objects, delta_time):
         pass
+
+    def env_update(self, fps, *args):
+        pass
+    
+class Grass_green(Object):
+    def __init__(self, x, y):
+        super().__init__("Tileset", "Night", 32,32,x, y)
