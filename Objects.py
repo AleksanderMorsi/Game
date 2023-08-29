@@ -10,6 +10,7 @@ class Object(pg.sprite.Sprite):
         self.pos = list((x, y))
         self.rect = pg.Rect(x,y, sprite_w,sprite_h)
         self.mask = pg.mask.from_surface(self.sprite)
+        self.vel = (0,0)
         if collide:
             self.type = "Object"
         else:

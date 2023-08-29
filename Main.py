@@ -20,7 +20,7 @@ WIN_SIZE = (1900, 900)
 FPS = 60
 
 # init & load
-window = pg.display.set_mode(WIN_SIZE, pg.RESIZABLE)
+window = pg.display.set_mode(WIN_SIZE)
 surface = pg.Surface((1920, 1080))
 
 def draw(surface, window, objects, background, player):
@@ -51,6 +51,8 @@ def main(window):
     a_pressed = False
     d_pressed = False
 
+    paused  = False
+
     # spawns ------------------------------------------------------
     for i in range(surface.get_width()//16):
         objects.append(Object("Tileset", "Night", 32,32,i*64,
@@ -67,10 +69,17 @@ def main(window):
             if event.type == pg.QUIT:
                 run = False
                 break
+            if event.type == pg.VIDEORESIZE:
+                background.update()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     run = False
                     break
+                if event.key == pg.K_p:
+                    if paused:
+                        paused = False
+                    else:
+                        paused = True
                 if event.key == pg.K_SPACE:
                     player.attack()
                 # if event.key == pg.K_w:
@@ -86,18 +95,18 @@ def main(window):
                     a_pressed = False
                 if event.key == pg.K_d:
                     d_pressed = False
-            if event.type == pg.VIDEORESIZE:
-                background.update()
 
-        if a_pressed:
-            player.moveleft()
-        elif d_pressed:
-            player.moveright()
-        else:
-            player.stop()
+        if not paused:
 
-        update(objects, delta_time)
-        draw(surface, window, objects, background, player)
+            if a_pressed:
+                player.moveleft()
+            elif d_pressed:
+                player.moveright()
+            else:
+                player.stop()
+
+            update(objects, delta_time)
+            draw(surface, window, objects, background, player)
 
 
     pg.quit()
