@@ -9,9 +9,6 @@ import Characters
 from customFunctions import load_sprite_sheets, Background
 from Objects import Object
 
-# to do:
-# - add animation mechanic to character class
-
 pg.init()
 pg.display.set_caption("Game")
 
