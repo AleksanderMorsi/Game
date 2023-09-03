@@ -14,7 +14,7 @@ pg.display.set_caption("Game")
 
 # default settings
 WIN_SIZE = (1900, 900)
-FPS = 60
+FPS = 60 # 9<FPS<145!!!
 
 # init & load
 window = pg.display.set_mode(WIN_SIZE)
@@ -47,6 +47,8 @@ def main(window):
     background = Background("Tileset", "Night", 32, 32, 0)
     a_pressed = False
     d_pressed = False
+    w_pressed = False
+    s_pressed = False
 
     paused  = False
 
@@ -55,8 +57,10 @@ def main(window):
         objects.append(Objects.Grass_green(-surface.get_width()*2+i*64, surface.get_height()-64))
 
     objects.append(Characters.Knight(1200, surface.get_height()-64 - 86))
+    objects.append(Characters.Knight(2200, surface.get_height()-64 - 86))
+    objects.append(Characters.Knight(-1350, surface.get_height()-64 - 86))
 
-    player = Characters.Player(1000, surface.get_height()-64 - 86)
+    player = Characters.Player(1000, surface.get_height()-64 - 86, debug=True)
     objects.append(player)
     for object in objects:
         object.env_update(FPS)
@@ -82,8 +86,10 @@ def main(window):
                         paused = True
                 if event.key == pg.K_SPACE:
                     player.attack()
-                # if event.key == pg.K_w:
-                #     player.jump()
+                if event.key == pg.K_w:
+                    w_pressed = True
+                if event.key == pg.K_s:
+                    s_pressed = True
                 if event.key == pg.K_a:
                     a_pressed = True
                 if event.key == pg.K_d:
@@ -95,15 +101,22 @@ def main(window):
                     a_pressed = False
                 if event.key == pg.K_d:
                     d_pressed = False
+                if event.key == pg.K_s:
+                    s_pressed = False
+                if event.key == pg.K_w:
+                    w_pressed = False
 
         if not paused:
-
-            if a_pressed:
+            if s_pressed:
+                player.defend(True)
+            elif a_pressed:
                 player.moveleft()
             elif d_pressed:
                 player.moveright()
-            else:
-                player.stop(delta_time)
+            if not s_pressed:
+                player.defend(False)
+            if w_pressed:
+                player.jump()
 
             update(objects, delta_time)
             draw(surface, window, objects, background, player)
