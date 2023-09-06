@@ -16,7 +16,10 @@ class Object(pg.sprite.Sprite):
         else:
             self.type = "Object!collide"
 
-    def draw(self, surface, offset):
+    def get_parent(self):
+        return "Objects"
+
+    def draw(self, surface, offset, window):
         surface.blit(self.sprite, (self.pos[0]+offset[0], self.pos[1]+offset[1]))
 
     def update(self, objects, delta_time):
@@ -28,3 +31,6 @@ class Object(pg.sprite.Sprite):
 class Grass_green(Object):
     def __init__(self, x, y):
         super().__init__("Tileset", "Night", 32,32,x, y)
+
+    def get_class(self):
+        return "Grass_green"

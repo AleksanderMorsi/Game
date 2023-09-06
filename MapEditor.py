@@ -10,7 +10,10 @@ from customFunctions import load_sprite_sheets, Background
 from Objects import Object
 
 pg.init()
-pg.display.set_caption("Game")
+pg.display.set_caption("Editor")
+
+# editor settings:
+map = "maps/map1"
 
 # default settings
 WIN_SIZE = (1900, 900)
@@ -19,47 +22,37 @@ FPS = 60 # 9<FPS<145!!!
 # init & load
 window = pg.display.set_mode(WIN_SIZE)
 surface = pg.Surface((1920, 1080))
+file = open(map+".txt", "r")
+lines = file.readlines()
+file.close()
 
-# HUD | size in %
-hp_bar_width = 0.2
-hp_bar_height = 0.02
 
 def draw(surface, window, objects, background, player):
     win_center = (pg.display.get_surface().get_width()//2, pg.display.get_surface().get_height()//2)
     surface_center = (surface.get_width()//2, surface.get_height()//2)
-    offset = [win_center[0]-player.pos[0]-(player.size[0]//2),
-              win_center[1] - player.pos[1]]
-    surface.blit(background.surface, (
-        -win_center[0]+surface_center[0], -win_center[1]+surface_center[1]))
+    offset = [win_center[0]-player[0],
+              win_center[1] - player[1]]
+    surface.blit(background.surface, (offset[0], offset[1]))
 
     for object in objects:
-        object.draw(surface, offset, window)
+        object.draw(surface, [0,0], window)
 
-    draw_hud(surface, objects, player, window)
-
-    window.blit(surface,(win_center[0]-surface_center[0], win_center[1]-surface_center[1]))
+    window.blit(surface,(offset[0], offset[1]))
 
     pg.display.update()
+
+def spawn(selceted, objects, mouse, surface, window, player):
+    win_center = (pg.display.get_surface().get_width()//2, pg.display.get_surface().get_height()//2)
+    surface_center = (surface.get_width()//2, surface.get_height()//2)
+    offset = [win_center[0]-player[0],
+              win_center[1] - player[1]]
+    mousex = -offset[0]+mouse[0]
+    mousey = player[1] - window.get_height()//2 + mouse[1]
+    print(mousex, mousey, objects[0].pos)
 
 def update(objects, delta_time):
     for object in objects:
         object.update(objects, delta_time)
-
-def draw_hud(surface, objects, player, window):
-    diffx = (surface.get_width()//2) - (window.get_width()//2)
-    diffy = (surface.get_height()//2) - (window.get_height()//2)
-    win_width = window.get_width()
-    win_height = window.get_height()
-    # hp bar
-    margin = win_height * 0.02
-    hp_barx = 0+margin + diffx
-    hp_bary = (win_height-win_width*hp_bar_height - margin) + diffy
-    pg.draw.rect(surface, player.hp_red,
-                 pg.Rect(hp_barx,                         hp_bary,
-                         hp_bar_width*win_width,hp_bar_height*win_width))
-    pg.draw.rect(surface, player.hp_green,
-                 pg.Rect(hp_barx,                         hp_bary,
-                         hp_bar_width*win_width *(player.hp/player.hp_max),hp_bar_height*win_width))
 
 
 def main(window):
@@ -72,17 +65,18 @@ def main(window):
     d_pressed = False
     w_pressed = False
     s_pressed = False
+    selected_object = None
 
     paused  = False
 
-    # spawns ------------------------------------------------------
-    for i in range(surface.get_width()*5//64):
-        objects.append(Objects.Grass_green(-surface.get_width()*2+i*64, surface.get_height()-64))
+    camera = [0, 0]
 
-    player = Characters.Player(1000, surface.get_height()-64 - 86, debug=False)
-    objects.append(player)
-    for object in objects:
-        object.env_update(FPS)
+    # spawns ------------------------------------------------------
+    for line in lines:
+        if len(line) > 3:
+            words = line.split()
+            command ="objects.append({}.{}({},{}))".format(words[0], words[1], words[2], words[3])
+            exec(command)
     # --------------------------------------------------------------
 
     while run:
@@ -104,7 +98,7 @@ def main(window):
                     else:
                         paused = True
                 if event.key == pg.K_SPACE:
-                    player.attack()
+                    pass
                 if event.key == pg.K_w:
                     w_pressed = True
                 if event.key == pg.K_s:
@@ -113,8 +107,31 @@ def main(window):
                     a_pressed = True
                 if event.key == pg.K_d:
                     d_pressed = True
+                if event.key == pg.K_1:
+                    selected_object = "Objects.Grass_green"
+                if event.key == pg.K_2:
+                    selected_object = None
+                if event.key == pg.K_3:
+                    selected_object = None
+                if event.key == pg.K_4:
+                    selected_object = None
+                if event.key == pg.K_5:
+                    selected_object = None
+                if event.key == pg.K_6:
+                    selected_object = None
+                if event.key == pg.K_7:
+                    selected_object = None
+                if event.key == pg.K_8:
+                    selected_object = None
+                if event.key == pg.K_9:
+                    selected_object = None
+                if event.key == pg.K_0:
+                    selected_object = None
                 if event.key == pg.K_F11:
                     pg.display.toggle_fullscreen()
+            if event.type == pg.MOUSEBUTTONUP:
+                mouse = pg.mouse.get_pos()
+                spawn(selected_object, objects, mouse, surface, window, camera)
             if event.type == pg.KEYUP:
                 if event.key == pg.K_a:
                     a_pressed = False
@@ -127,19 +144,25 @@ def main(window):
 
         if not paused:
             if s_pressed:
-                player.defend(True)
+                camera[1] += 5
             elif a_pressed:
-                player.moveleft()
+                camera[0] -= 5
             elif d_pressed:
-                player.moveright()
-            if not s_pressed:
-                player.defend(False)
+                camera[0] += 5
             if w_pressed:
-                player.jump()
+                camera[1] -= 5
 
-            update(objects, delta_time)
-            draw(surface, window, objects, background, player)
+            draw(surface, window, objects, background, camera)
 
+    file = open(map+".txt", "w")
+    for object in objects:
+        parent_name = object.get_parent()
+        class_name = object.get_class()
+        x = object.pos[0]
+        y = object.pos[1]
+        line = "{} {} {} {}\n".format(parent_name, class_name, x, y)
+        file.write(line)
+    file.close()
 
     pg.quit()
     quit()

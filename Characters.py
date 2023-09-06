@@ -18,8 +18,8 @@ class Characters(pg.sprite.Sprite):
         self.hp_max = hp
         self.hp_bar = pg.Rect(x+self.size[0]//2 - self.hp_bar_width//2,
                                   y, self.hp_bar_width, self.hp_bar_height)
-        self.hp_green = (30, 222, 30)
-        self.hp_red = (222, 30, 30)
+        self.hp_green = (30, 150, 30)
+        self.hp_red = (120, 30, 30)
         self.range = range
         self.reach = 0
         self.rect = pg.Rect(x,y,sprite_w *scale , sprite_h * scale) # collision rect (collision with mask)
@@ -51,7 +51,10 @@ class Characters(pg.sprite.Sprite):
         self.chase_range = 1500
         self.debug = debug
 
-    def draw(self, surface, offset):
+    def get_parent(self):
+        return "Characters"
+
+    def draw(self, surface, offset, window):
         if not self.dead:
             if self.hit:
                 self.sprite = self.sprites["Hurt_"+self.direction][self.anim_count//self.animation_time]
@@ -100,11 +103,15 @@ class Characters(pg.sprite.Sprite):
                 self.sprite = self.sprites["Idle_"+self.direction][
                     self.anim_count // self.animation_time % len(self.sprites["Idle_"+self.direction])]
 
-            pg.draw.rect(surface, self.hp_red, pg.Rect(self.hp_bar.x + offset[0], self.hp_bar.y + offset[1],
-                                                       self.hp_bar.width, self.hp_bar.height))
-            pg.draw.rect(surface, self.hp_green, pg.Rect(self.hp_bar.x + offset[0], self.hp_bar.y + offset[1],
-                                                       self.hp_bar.width*(self.hp/self.hp_max),
-                                                         self.hp_bar.height))
+            if not (self.type == "Player"):
+                pg.draw.rect(surface, self.hp_red, pg.Rect(self.hp_bar.x + offset[0], self.hp_bar.y + offset[1],
+                                                           self.hp_bar.width, self.hp_bar.height))
+                pg.draw.rect(surface, self.hp_green, pg.Rect(self.hp_bar.x + offset[0], self.hp_bar.y + offset[1],
+                                                           self.hp_bar.width*(self.hp/self.hp_max),
+                                                             self.hp_bar.height))
+            else:
+                pass
+
             surface.blit(self.sprite, (self.pos[0] + offset[0], self.pos[1]+offset[1]))
             self.anim_count += 1
             if self.type=="Enemy":
@@ -303,6 +310,9 @@ class Player(Characters):
 
     def loop(self, delta_time, objects):
         self.stop(delta_time)
+
+    def get_class(self):
+        return "Player"
         
 class Knight(Characters):
     def __init__(self, x, y, debug = False):
@@ -318,4 +328,7 @@ class Knight(Characters):
         player = objects[-1]
         self.move_to_player(player)
         self.melee_attack_player(player)
+
+    def get_class(self):
+        return "Knight"
 
