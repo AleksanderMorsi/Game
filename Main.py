@@ -6,8 +6,9 @@ import math
 from os import listdir
 from os.path import isfile, join
 import Characters
-from customFunctions import load_sprite_sheets, Background
+from customFunctions import load_sprite_sheets
 from Objects import Object
+import Backgrounds
 
 pg.init()
 pg.display.set_caption("Game")
@@ -15,10 +16,17 @@ pg.display.set_caption("Game")
 # default settings
 WIN_SIZE = (1900, 900)
 FPS = 60 # 9<FPS<145!!!
+map = "maps/map1"
 
 # init & load
 window = pg.display.set_mode(WIN_SIZE)
-surface = pg.Surface((1920, 1080))
+surface = pg.Surface((3840, 2160))
+try:
+    file = open(map+".txt", "r")
+except:
+    file = open(map+".txt", "w+")
+lines = file.readlines()
+file.close()
 
 # HUD | size in %
 hp_bar_width = 0.2
@@ -27,8 +35,8 @@ hp_bar_height = 0.02
 def draw(surface, window, objects, background, player):
     win_center = (pg.display.get_surface().get_width()//2, pg.display.get_surface().get_height()//2)
     surface_center = (surface.get_width()//2, surface.get_height()//2)
-    offset = [win_center[0]-player.pos[0]-(player.size[0]//2),
-              win_center[1] - player.pos[1]]
+    offset = [surface_center[0]-player.pos[0]-(player.size[0]//2),
+              surface_center[1] - player.pos[1]-(player.size[0]//2)]
     surface.blit(background.surface, (
         -win_center[0]+surface_center[0], -win_center[1]+surface_center[1]))
 
@@ -67,7 +75,7 @@ def main(window):
     run = True
 
     objects = []
-    background = Background("Tileset", "Night", 32, 32, 0)
+    background = Backgrounds.Night()
     a_pressed = False
     d_pressed = False
     w_pressed = False
@@ -76,11 +84,12 @@ def main(window):
     paused  = False
 
     # spawns ------------------------------------------------------
-    for i in range(surface.get_width()*5//64):
-        objects.append(Objects.Grass_green(-surface.get_width()*2+i*64, surface.get_height()-64))
-
-    player = Characters.Player(1000, surface.get_height()-64 - 86, debug=False)
-    objects.append(player)
+    for line in lines:
+        if len(line) > 3:
+            words = line.split()
+            command ="objects.append({}.{}({},{}))".format(words[0], words[1], words[2], words[3])
+            exec(command, globals(), locals())
+    player = objects[-1]
     for object in objects:
         object.env_update(FPS)
     # --------------------------------------------------------------

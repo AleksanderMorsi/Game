@@ -30,35 +30,3 @@ def load_sprite_sheets(dir1, dir2, width, height, direction=True, scale=1):
             all_sprites[image.replace(".png", "")] = sprites
 
     return all_sprites
-
-class Background(pg.sprite.Sprite):
-    def __init__(self,dir1, dir2, width, height, number):
-        self.sprites = load_sprite_sheets(dir1, dir2, width, height, False)
-        self.image = self.sprites["Tileset"][number]
-        WIDTH = pg.display.get_surface().get_width()
-        HEIGHT = pg.display.get_surface().get_height()
-        width, height = self.image.get_width(), self.image.get_height()
-        self.tiles = []
-        for i in range(WIDTH // width + 1):
-            for j in range(HEIGHT // height + 1):
-                pos = [i * width, j * height]
-                self.tiles.append(pos)
-        self.surface = pg.Surface(pg.display.get_window_size())
-        for tile in self.tiles:
-            self.surface.blit(self.image, tile)
-    def update(self):
-        WIDTH = pg.display.get_surface().get_width()
-        HEIGHT = pg.display.get_surface().get_height()
-        width, height = self.image.get_width(), self.image.get_height()
-        self.tiles = []
-        for i in range(WIDTH // width + 1):
-            for j in range(HEIGHT // height + 1):
-                pos = [i * width, j * height]
-                self.tiles.append(pos)
-        self.surface = pg.Surface(pg.display.get_window_size())
-        for tile in self.tiles:
-            self.surface.blit(self.image, tile)
-
-
-    def draw(self, surface):
-        surface.blit(self.surface, (0,0))

@@ -9,7 +9,7 @@ class Characters(pg.sprite.Sprite):
         super().__init__()
         self.size = (sprite_w*scale, sprite_h*scale)
         self.sprites = load_sprite_sheets(sprite_dir1, sprite_dir2, sprite_w, sprite_h, scale=scale)
-        self.sprite = self.sprites["Idle_right"][0]
+        self.sprite =  self.sprites["Idle_right"][0]
         self.pos = list((x, y))
         self.vel = list((0, 0))
         self.hp_bar_width = 80
@@ -29,6 +29,7 @@ class Characters(pg.sprite.Sprite):
         self.dmg = dmg
         self.anim_count = 0 # animation frame counter
         self.fps = 10
+        self.anim_lock = False
         self.animation_time = int(0.11 * self.fps) # frames before next animation frame
         self.fall_count = 0
         self.deathoffset = death_offset # adjusts death animation to fit
@@ -102,6 +103,9 @@ class Characters(pg.sprite.Sprite):
             elif self.vel[1] != 0:
                 self.sprite = self.sprites["Idle_"+self.direction][
                     self.anim_count // self.animation_time % len(self.sprites["Idle_"+self.direction])]
+
+            if self.anim_lock:
+                self.sprite = self.sprites["Idle_"+self.direction][0 ]
 
             if not (self.type == "Player"):
                 pg.draw.rect(surface, self.hp_red, pg.Rect(self.hp_bar.x + offset[0], self.hp_bar.y + offset[1],
@@ -222,7 +226,6 @@ class Characters(pg.sprite.Sprite):
                 if (object.type != self.type and self.is_attacking and self.melee and
                         pg.sprite.collide_mask(self, object) and self.attack_frame):
                     object.get_attacked(self.dmg, self.str, self)
-                    self.attack_frame = False
                 if object.type not in self.collide_with:
                     continue
                 self.rect.y += 5
@@ -241,6 +244,7 @@ class Characters(pg.sprite.Sprite):
                     self.collision_x =True
                 self.rect.x -= (self.vel[0] * delta_time)+5
         self.on_ground = on_ground
+        self.attack_frame = False
 
     def jump(self):
         if self.on_ground:
@@ -307,13 +311,14 @@ class Player(Characters):
         self.debug = debug
         self.type = "Player"
         self.melee = True
+        self.priority = 0
 
     def loop(self, delta_time, objects):
         self.stop(delta_time)
 
     def get_class(self):
         return "Player"
-        
+
 class Knight(Characters):
     def __init__(self, x, y, debug = False):
         super().__init__("MainCharacters", "Knight_3",86, 86, x, y,
@@ -322,6 +327,7 @@ class Knight(Characters):
         self.type = "Enemy"
         self.melee = True
         self.reach = 100
+        self.priority = 10
 
     def loop(self, delta_time, objects):
         self.stop(delta_time)
